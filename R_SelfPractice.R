@@ -39,8 +39,7 @@ xor(TRUE, TRUE) # elementwise exclusive, 异或。两值相同为FALSE，两值�
   mean(xls_data$Sepal.Length)
   sepal %>% select(Sepal.Length, Species) %>% filter(Sepal.Length > mean(Sepal.Length))
   #filter() test4: find out all sepal length of versicolor larger than the mean of versicolor
-  sepal %>% select(Sepal.Length, Species) %>% 
-    filter(Species == 'versicolor', 
-           Sepal.Length > mean(
-             xls_data %>% select(Sepal.Length, Species) %>% filter()
-           ))
+  versicolor_sep_length <- xls_data %>% filter(Species == "versicolor")
+  versicolor_sep_length_small <- versicolor_sep_length %>% filter (Sepal.Length > mean(Sepal.Length))
+  #arange the data using arrange()
+  arrange(versicolor_sep_length_small, desc(Sepal.Length)) # arrange the versicolor_sep_length_small, descening is the default sort
