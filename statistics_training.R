@@ -2,10 +2,45 @@ library(tidyverse)
 library(infer)
 library(readxl)
 
+"
+Some essential knwoledges before we writing codes.
+Data Type in Statistics: Numeric(continuous, discrete), Categorical(binary, ordinal).
+Here are some examples. If you want to learn more about Statistics, you can find books, blogs and online courses.
+Continuous data: temperature each day(celsius degree), e.g. 11.6, 23.2, 34.1, 39.5.
+Discrete data: student number of each class, e.g. 20 for class A, 23 for class B, 11 for class C.
+Binary data: people who have a car, Yes or No. True or False.
+Ordinal data: univerrsity rankings, e.g. t0, t1, t2, t3.
+
+Population: the entire group we want to reasearch, e.g. all undergraduates in the nation
+Sample: a subset from Population and usually randomly selected from Population. 
+We use sample because the Population is too large to be included. 
+If we want to know the average height of undergraduates across the country, it's so difficult for us to collect data of each one cause
+the large number of students(Maybe hundreds thousands of students or even more!).
+
+So we can just sampling from the Population and analysis the sample data. 
+From my own view, Statistics is a tool for us to infer the characters of Population using characters of the Sample.
+"
+
+
 #chi-square independence test
-j_data1 <- read_excel("jerimalai_lithics.xlsx") %>%
-  filter(Material %in% c("Volcanic", "Quartzite")) %>%
-  filter(Artclas %in% c("Flake", "Hshat", "FFrag"))
+"
+We want to know if there's preference in the material of some artclass. 
+For example, do they prefer volcanics to make Flake?
+First, let's see the data type of Material and Artclas. 
+It's obvious that they're categorical data instead of numeric type.
+Chi-square independence test is very suitble to tell us whether there's preference or association.
+"
+# load the data we want
+j_data1 <- read_excel("jerimalai_lithics.xlsx") %>% # remember to install and load the package "readxl", "tidyverse"
+  filter(Material %in% c("Volcanic", "Quartzite")) %>% # we select rows which Material value is "Volcanic(火山岩)" and "Quartzite(石英岩)".
+  filter(Artclas %in% c("Flake", "Hshat", "FFrag")) # we select rows which Artclas value is "Flake", "Hshat" and "FFrag".
+"
+In j_data1, there's 297 rows. But there're many columns not necessary for chi-square analysis.
+We just want to keep the Material and Artclas columns.
+"
+# select the Material and Artclas columns.
+j_data1 <- j_data1 %>% select(Material, Artclas) # check the structure of j_data1 with str()
+# calculate the observed chi-square value of j_data1 using observe()
 
 null_distribution <- j_data1 %>% 
   specify(Material ~ Artclas) %>% # specify the columns we want to compare
