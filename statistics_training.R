@@ -21,6 +21,25 @@ So we can just sampling from the Population and analysis the sample data.
 From my own view, Statistics is a tool for us to infer the characters of Population using characters of the Sample.
 "
 
+#null hypothesis and alternative hypothesis
+"
+The characters of Population are usually unknown. 
+We must make hypothesis about the population's characters before sampling.
+For example, one official report said the average height of nationwide undergraduate student is 1.78 meters.
+We want to know whether this conclusion is true.
+We can make hypothesis, which is H0: mu0 = 1.78. We called H0 null hypothesis.
+And the opposite hypothesis of H0 is H1: mu0 != 1.78, called alternative hypothesis.
+We assume that H0 is true, then analyse the sample to get mu1.
+Sample consists of items randomly selected from population. If we sampled many times, we got mu1, mu2, mu3, mu4...
+The distribution of mu of samples can be visualized in a histogram.
+If mu0 locates in the center of histogram, we might think H0 is true or H0 is not wrong.
+If mu0 locates in the corner of histogram or out of the figure, we might think H0 is wrong.
+Two variables called alpha(α) & p-value helps us to know the credibility of H0.
+Usually we set alpha(α) to 0.05, sometimes it may be a smaller value(0.01).
+We get p-value after we do statistics with sample data and H0.
+If the p-value is lower than alpha(α), we can reject H0.
+If the p-value is higher than alpha(α), we can not reject H0.
+"
 
 #chi-square independence test
 "
@@ -41,11 +60,21 @@ We just want to keep the Material and Artclas columns.
 # select the Material and Artclas columns.
 j_data1 <- j_data1 %>% select(Material, Artclas) # check the structure of j_data1 with str()
 # calculate the observed chi-square value of j_data1 using observe()
+obs_chi <- observe(j_data1, stat = "Chisq", response = Material, explanatory = Artclas) # we want to find out the association between response variable and explanatory variable
+# There're many available statistic methods in stat option: "mean", "median", "sum", "sd", "prop", "count", "diff in means", "diff in medians", "diff in props", "Chisq" (or "chisq"), "F" (or "f"), "t", "z", "ratio of props", "slope", "odds ratio", "ratio of means", and "correlation"
+"
+We get the chi-square value of our observed data(2.63), it is the value of the sample, not that of Population.
+But where is the p-value?
+"
+# calculate the chi-square value and p-value using chisq_test()
+chisq_data <- chisq_test(j_data1, formula = Material ~ Artclas)
+"The p-value is 0.268, whici is larger than 0.05. We can say there's no association between the two columns."
 
+# common workflow for unknown distribution
 null_distribution <- j_data1 %>% 
-  specify(Material ~ Artclas) %>% # specify the columns we want to compare
-  hypothesise(null = "independence") %>%
-  generate(reps = 1000, type = "permute") %>%
+  specify(Material ~ Artclas) %>% # specify the response and explanatory variables(columns we want to compare)
+  hypothesise(null = "independence") %>% # Declare a null hypothesis about variables selected in specify().
+  generate(reps = 1000, type = "permute") %>% #In the context of hypothesis testing, this is a null distribution based on the result of specify() and ⁠hypothesize().⁠
   calculate(stat = "Chisq")
 
 null_distribution %>% 
