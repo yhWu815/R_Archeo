@@ -1,3 +1,2 @@
 This is a test file for github.
 And I add a new line.
-It is 0:44 am now.
