@@ -76,6 +76,8 @@ null_distribution <- j_data1 %>%
   hypothesise(null = "independence") %>% # Declare a null hypothesis about variables selected in specify().
   generate(reps = 1000, type = "permute") %>% #In the context of hypothesis testing, this is a null distribution based on the result of specify() and ⁠hypothesize().⁠
   calculate(stat = "Chisq")
+# reps: how many resamples we need to generate; type: how do we resample?
+# see explanation about permute and bootstrap in the Compreehension_on_Bootstrap_and_Permutation.Rmd file.
 
 null_distribution %>% 
   visualise() + 
