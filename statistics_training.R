@@ -69,32 +69,111 @@ But where is the p-value?
 # calculate the chi-square value and p-value using chisq_test()
 chisq_data <- chisq_test(j_data1, formula = Material ~ Artclas)
 "The p-value is 0.268, whici is larger than 0.05. We can say there's no association between the two columns."
-
 # common workflow for unknown distribution
 null_distribution <- j_data1 %>% 
   specify(Material ~ Artclas) %>% # specify the response and explanatory variables(columns we want to compare)
   hypothesise(null = "independence") %>% # Declare a null hypothesis about variables selected in specify().
   generate(reps = 1000, type = "permute") %>% #In the context of hypothesis testing, this is a null distribution based on the result of specify() and ⁠hypothesize().⁠
-  calculate(stat = "Chisq")
+  calculate(stat = "Chisq") # calculate the statistics given by stat.
 # reps: how many resamples we need to generate; type: how do we resample?
 # see explanation about permute and bootstrap in the Compreehension_on_Bootstrap_and_Permutation.Rmd file.
-
+# Visualisa the Chi-square value of null distribution
 null_distribution %>% 
-  visualise() + 
-  shade_p_value(obs_stat = 2.63, direction = "right") + 
+  visualise(bins = 15, dens_color = "grey") + #visualise the Chisq value of 10000 reps.
+  shade_p_value(obs_stat = obs_chi, color = "red2", direction = "greater", fill = "pink") +
   theme_bw(base_size = 20)
+# get the p_value
+p_value <-
+  null_distribution %>%
+    get_p_value(obs_stat = obs_chi, direction = "right")
+# get confidence interval
+confidence_interval <-
+  null_distribution %>%
+    get_confidence_interval(level = 0.95)
+# show confidence interval in histogram
+null_distribution %>%
+  visualise() +
+  shade_confidence_interval(confidence_interval) +
+  shade_p_value(obs_stat = obs_chi, direction = "right")
 
-j_data1 %>% group_by(Material, Artclas) %>% tally()
+
 
 #ANOVA(analysis of variation)
+"independence of flake length by all types of raw material"
+j_data2 <- read_excel("jerimalai_lithics.xlsx") %>%
+  filter(Artclas == "Flake") 
+"draw boxplot to observe the length of each material"
+ggplot(j_data2) +
+  aes(x = reorder(Material, Length), 
+      y = Length, 
+      color = Material
+      ) + #reorder the level of Material by Length(increasing order default)
+  geom_boxplot() + 
+  coord_flip() + # flip the coordinates
+  theme_minimal()
+# Are there any difference among these Materials?
+"Use ANOVA!"
+  #null distribution
+null_distribution_anova <- 
+  j_data2 %>%
+  specify(response = Length, explanatory = Material) %>%
+  hypothesise(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "F")
+  #observed F
+obs_f <- j_data2 %>% specify(response = Length, explanatory = Material) %>%
+  calculate(stat = "F")
+  #visualise null_distribution_anova
+null_distribution_anova %>%
+  visualise() + 
+  shade_p_value(obs_stat = obs_f, direction = "right") +
+  shade_confidence_interval(null_distribution_anova %>% get_confidence_interval(level = 0.95))
+  #get p value
+p_value_anova <- 
+  null_distribution_anova %>% 
+  get_p_value(obs_stat = obs_f, direction = "right") # p = 0!
+  #easy anova function
+aov(Length ~ Material, j_data2) %>% #aov{stats}
+  broom::tidy() #Turn an object into a tidy tibble
+  #how to analyse the difference between any two groups?
+aov_tidy <-
+  aov(Length ~ Material, j_data2) %>%
+    TukeyHSD() %>% # multiple two-group comparison, need aov object
+    broom::tidy()
+ggplot(aov_tidy, aes(
+    x = fct_reorder(contrast, estimate),
+    y = estimate
+  )) + 
+  geom_pointrange(aes(
+    ymin = conf.low,
+    ymax = conf.high,
+    color = adj.p.value < 0.05 #adj.p.value is the last column of broom::tidy
+  )) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  coord_flip() +
+  labs(color = "padj < 0.05", x = "Material Comparison") +
+  theme(axis.text.y = element_text(color = ifelse((aov_tidy$adj.p.value < 0.05) == TRUE, "red", "black")))
 
 #PCA (Principle Component Analysis), k-means
-nb_data <- read.csv("cascalheira-bicho-2020-data-prepped.csv")
-nb_data_rownames <- nb_data %>% column_to_rownames(var = "Sites")
-library(FactoMineR)
-res.pca <- PCA(nb_data_rownames, graph = FALSE)
-res.pca$eig
+"Reduce the dimension of data to illustrate them easier in 2D-figure"
+  #import the csv data from online sources using {rio}
+nb_data <- import(file = "https://bit.ly/2XFcOB5", format = ",", setclass = "tibble")
+nb_data_rownames <- 
+  nb_data %>% 
+  column_to_rownames(var = "Sites") #let the column be index of the tibble
+library(FactoMineR) # multivariable analysis package: PCA...
 library(factoextra)
+res.pca <- PCA(nb_data_rownames, graph = FALSE)
+res.pca %>% get_pca_var() #view pca results
+  #contributions to new dimension
+get_pca_var(res.pca)$contrib
+  #show new dimensions.
+fviz_screeplot(res.pca, choice = "variance", geom = "bar", addlabels = TRUE) #select dim1, dim2
+  #visualise with variables
+fviz_pca_var(res.pca)
+  #visualise with samples
+fviz_pca_ind(res.pca)
+  #visualise with both of variables and samples
 fviz_pca_biplot(res.pca)
 
 #RadioCarbon dating
