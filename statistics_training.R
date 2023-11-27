@@ -230,17 +230,17 @@ ggplot(pottery) +
   geom_point() +
   coord_equal()
 
-library(sf)
+library(sf) #encode spatial vector data
 # read in the shapefile
 geology <-
-  st_read("geology/geology.shp")
+  st_read("geology/geology.shp") #converting Well-Know Binary geometries to sfc
 # convert pottery to spacial data frame
 pottery_sf <-
-  st_as_sf(pottery, coords = c("Xsugg", "Ysugg"))
+  st_as_sf(pottery, coords = c("Xsugg", "Ysugg")) #Convert foreign object to an sf object
 # set crs(coordinate system) for the pottery data
-st_crs(pottery_sf) <- st_crs(geology)
+st_crs(pottery_sf) <- st_crs(geology) #Retrieve coordinate reference system from sf or sfc object
 ggplot() + geom_sf(data = geology, aes(fill = Type)) +
-  scale_fill_viridis_d() +
+  scale_fill_viridis_d() + #viridis colour scales
   geom_sf(data = pottery_sf,
           aes(colour = SherdNo),
           size = 0.1) + 
